@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import styles from "./nearbyjobs.style";
 import { checkImageURL } from "../../../utils/app.js";
 import { COLORS } from "../../../constants";
+import API_BASE_URL from "../../../constants/api";
 
 const Nearbyjobs = () => {
   const [data, setData] = useState([]);
@@ -15,7 +16,7 @@ const Nearbyjobs = () => {
   const fetchJobs = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("http://192.168.0.108:3000/api/jobs");
+      const response = await fetch(`${API_BASE_URL}/api/jobs`);
       const result = await response.json();
       setData(result);
     } catch (err) {

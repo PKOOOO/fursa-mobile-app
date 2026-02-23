@@ -18,6 +18,7 @@ import {
   Specifics,
 } from "../../components";
 import { COLORS, icons, SIZES } from "../../constants";
+import API_BASE_URL from "../../constants/api";
 
 const tabs = ["About", "Qualifications", "Responsibilities"];
 
@@ -35,7 +36,7 @@ const JobDetails = () => {
   const fetchJobDetails = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`http://192.168.0.108:3000/api/jobs/${id}`);
+      const response = await fetch(`${API_BASE_URL}/api/jobs/${id}`);
       if (!response.ok) {
         throw new Error("Failed to fetch job details");
       }
@@ -57,19 +58,25 @@ const JobDetails = () => {
   // Handle tab content
   const displayTabContent = () => {
     switch (activeTab) {
-      case "Qualifications":
-        return (
-            <JobAbout info={job?.remote ?? "No data provided"} />
-        );
-
       case "About":
         return (
-          <JobAbout info={job?.title ?? "No data provided"} />
+          <JobAbout info={job?.description ?? "No data provided"} />
+        );
+
+      case "Qualifications":
+        const quals = job?.qualifications
+          ? job.qualifications.split("\n").map((q) => q.replace(/^[•\-]\s*/, "").trim()).filter(Boolean)
+          : ["No qualifications listed"];
+        return (
+          <Specifics title="Qualifications" points={quals} />
         );
 
       case "Responsibilities":
+        const resps = job?.responsibilities
+          ? job.responsibilities.split("\n").map((r) => r.replace(/^[•\-]\s*/, "").trim()).filter(Boolean)
+          : ["No responsibilities listed"];
         return (
-            <JobAbout info={job?.description ?? "No data provided"} />
+          <Specifics title="Responsibilities" points={resps} />
         );
 
       default:
@@ -123,10 +130,10 @@ const JobDetails = () => {
           <View style={{ padding: SIZES.medium, paddingBottom: 100 }}>
             {/* Company Information */}
             <Company
-              companyLogo={job?.jobIcon}
+              companyLogo={job?.employerLogo || job?.jobIcon}
               jobTitle={job?.title}
-              companyName={job?.contactEmail}
-              location={job?.state}
+              companyName={job?.company}
+              location={job?.location}
             />
 
             {/* Job Tabs */}
@@ -144,7 +151,9 @@ const JobDetails = () => {
 
       {/* Job Footer */}
       <JobFooter
-    
+        jobId={id}
+        title={job?.title}
+        company={job?.company}
       />
     </SafeAreaView>
   );

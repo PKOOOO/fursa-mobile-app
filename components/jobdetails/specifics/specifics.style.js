@@ -1,40 +1,51 @@
 import { StyleSheet } from "react-native";
-
 import { COLORS, FONT, SIZES } from "../../../constants";
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: SIZES.large,
-    backgroundColor: "#FFF",
-    borderRadius: SIZES.medium,
-    padding: SIZES.medium,
+    marginTop: SIZES.medium,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 1,
   },
   title: {
-    fontSize: SIZES.large,
+    fontSize: 17,
+    fontWeight: "700",
     color: COLORS.primary,
-    fontFamily: FONT.bold,
+    letterSpacing: -0.3,
+    marginBottom: 14,
   },
   pointsContainer: {
-    marginVertical: SIZES.small,
+    gap: 0,
   },
   pointWrapper: {
     flexDirection: "row",
-    justifyContent: "flex-start",
     alignItems: "flex-start",
-    marginVertical: SIZES.small / 1.25,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f5f5f5",
   },
   pointDot: {
     width: 6,
     height: 6,
-    borderRadius: 6,
-    backgroundColor: COLORS.gray2,
-    marginTop: 6,
+    borderRadius: 3,
+    backgroundColor: COLORS.primary,
+    marginTop: 7,
+    opacity: 0.5,
   },
   pointText: {
-    fontSize: SIZES.medium - 2,
-    color: COLORS.gray,
+    fontSize: 14.5,
+    lineHeight: 20,
+    color: "#4a4a4a",
     fontFamily: FONT.regular,
-    marginLeft: SIZES.small,
+    marginLeft: 12,
+    flex: 1,
+    letterSpacing: 0.1,
   },
 });
 

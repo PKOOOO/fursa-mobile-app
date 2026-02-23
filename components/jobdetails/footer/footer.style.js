@@ -1,5 +1,4 @@
-import { StyleSheet } from "react-native";
-
+import { StyleSheet, Platform } from "react-native";
 import { COLORS, FONT, SIZES } from "../../../constants";
 
 const styles = StyleSheet.create({
@@ -8,39 +7,43 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    padding: SIZES.small,
-    backgroundColor: "#FFF",
-    justifyContent: "space-between",
-    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: Platform.OS === "ios" ? 32 : 14,
+    backgroundColor: "#fff",
     flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#f0f0f0",
   },
   likeBtn: {
-    width: 55,
-    height: 55,
-    borderWidth: 1,
-    borderColor: "#2c6fc3",
-    borderRadius: SIZES.medium,
+    width: 50,
+    height: 50,
+    borderWidth: 1.5,
+    borderColor: "#e0e0e0",
+    borderRadius: 14,
     justifyContent: "center",
     alignItems: "center",
   },
   likeBtnImage: {
     width: "40%",
     height: "40%",
-    tintColor: "#2c6fc3",
+    tintColor: "#999",
   },
   applyBtn: {
     flex: 1,
-    backgroundColor: "#2c6fc3",
-    height: "100%",
+    backgroundColor: COLORS.primary,
+    height: 50,
     justifyContent: "center",
     alignItems: "center",
-    marginLeft: SIZES.medium,
-    borderRadius: SIZES.medium,
+    borderRadius: 14,
   },
   applyBtnText: {
-    fontSize: SIZES.medium,
-    color: COLORS.white,
-    fontFamily: FONT.bold,
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#fff",
+    letterSpacing: 0.3,
   },
 });
 

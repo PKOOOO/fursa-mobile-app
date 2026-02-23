@@ -1,5 +1,4 @@
 import { StyleSheet } from "react-native";
-
 import { COLORS, FONT, SIZES } from "../../../constants";
 
 const styles = StyleSheet.create({
@@ -7,54 +6,66 @@ const styles = StyleSheet.create({
     marginVertical: SIZES.medium,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 2,
   },
   logoBox: {
-    width: 80,
-    height: 80,
+    width: 72,
+    height: 72,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FFF",
-    borderRadius: SIZES.large,
+    backgroundColor: "#f8f8f8",
+    borderRadius: 18,
+    overflow: "hidden",
   },
   logoImage: {
-    width: "80%",
-    height: "80%",
+    width: "85%",
+    height: "85%",
+    borderRadius: 12,
   },
   jobTitleBox: {
-    marginTop: SIZES.small,
+    marginTop: 14,
   },
   jobTitle: {
-    fontSize: SIZES.large,
+    fontSize: 20,
     color: COLORS.primary,
-    fontFamily: FONT.bold,
+    fontWeight: "700",
     textAlign: "center",
+    letterSpacing: -0.3,
   },
   companyInfoBox: {
-    marginTop: SIZES.small / 2,
+    marginTop: 8,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
+    gap: 4,
   },
   companyName: {
-    fontSize: SIZES.medium - 2,
-    color: COLORS.primary,
-    fontFamily: FONT.medium,
+    fontSize: 14,
+    color: "#666",
+    fontWeight: "500",
   },
   locationBox: {
     flexDirection: "row",
-    justifyContent: "center",
     alignItems: "center",
+    gap: 3,
   },
   locationImage: {
-    width: 14,
-    height: 14,
-    tintColor: COLORS.gray,
+    width: 13,
+    height: 13,
+    tintColor: "#999",
   },
   locationName: {
-    fontSize: SIZES.medium - 2,
-    color: COLORS.gray,
-    fontFamily: FONT.regular,
-    marginLeft: 2,
+    fontSize: 14,
+    color: "#999",
+    fontWeight: "400",
   },
 });
 

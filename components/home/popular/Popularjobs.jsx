@@ -10,6 +10,7 @@ import {
 import styles from "./popularjobs.style";
 import { COLORS, SIZES } from "../../../constants";
 import PopularJobCard from "../../common/cards/popular/PopularJobCard";
+import API_BASE_URL from "../../../constants/api";
 
 const Popularjobs = () => {
   const router = useRouter();
@@ -21,7 +22,7 @@ const Popularjobs = () => {
   const fetchJobs = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("http://192.168.0.108:3000/api/jobs");
+      const response = await fetch(`${API_BASE_URL}/api/jobs`);
       const result = await response.json();
       setData(result);
     } catch (err) {
@@ -223,28 +224,28 @@ export default Popularjobs;
 //         </TouchableOpacity>
 //       </View>
 
-      // <View style={styles.cardsContainer}>
-      //   {isLoading ? (
-      //     <ActivityIndicator size='large' color={COLORS.primary} />
-      //   ) : error ? (
-      //     <Text>Something went wrong</Text>
-      //   ) : (
-      //     <FlatList
-      //       data={data}
-      //       renderItem={({ item }) => (
-      //         <PopularJobCard
-      //           item={item}
-      //           selectedJob={selectedJob}
-      //           handleCardPress={handleCardPress}
-      //         />
-      //       )}
-      //       keyExtractor={(item) => item.job_id}
-      //       contentContainerStyle={{ columnGap: SIZES.medium }}
-      //       horizontal
-      //       showsHorizontalScrollIndicator={false}
-      //     />
-      //   )}
-      // </View>
+// <View style={styles.cardsContainer}>
+//   {isLoading ? (
+//     <ActivityIndicator size='large' color={COLORS.primary} />
+//   ) : error ? (
+//     <Text>Something went wrong</Text>
+//   ) : (
+//     <FlatList
+//       data={data}
+//       renderItem={({ item }) => (
+//         <PopularJobCard
+//           item={item}
+//           selectedJob={selectedJob}
+//           handleCardPress={handleCardPress}
+//         />
+//       )}
+//       keyExtractor={(item) => item.job_id}
+//       contentContainerStyle={{ columnGap: SIZES.medium }}
+//       horizontal
+//       showsHorizontalScrollIndicator={false}
+//     />
+//   )}
+// </View>
 //     </View>
 //   );
 // };

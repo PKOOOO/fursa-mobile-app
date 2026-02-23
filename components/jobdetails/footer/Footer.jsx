@@ -1,9 +1,19 @@
-import { View, Text, TouchableOpacity, Image, Linking } from "react-native";
+import { View, Text, TouchableOpacity, Image } from "react-native";
+import { useRouter } from "expo-router";
 
 import styles from "./footer.style";
 import { icons } from "../../../constants";
 
-const Footer = ({ url }) => {
+const Footer = ({ jobId, title, company }) => {
+  const router = useRouter();
+
+  const handleApply = () => {
+    router.push({
+      pathname: `/apply/${jobId}`,
+      params: { title, company },
+    });
+  };
+
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.likeBtn}>
@@ -14,10 +24,7 @@ const Footer = ({ url }) => {
         />
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.applyBtn}
-        // onPress={() => Linking.openURL(url)}
-      >
+      <TouchableOpacity style={styles.applyBtn} onPress={handleApply}>
         <Text style={styles.applyBtnText}>Apply for job</Text>
       </TouchableOpacity>
     </View>

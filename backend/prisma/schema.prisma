@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Job {
+  id               String        @id @default(cuid())
+  title            String
+  description      String
+  company          String
+  contactEmail     String
+  location         String        // e.g. "Mombasa"
+  state            String?       // e.g. "Kenya"
+  type             String        // Full-time, Part-time, Contractor, Hustle, Home
+  remote           Boolean       @default(false)
+  salary           String?       // e.g. "KES 50,000 - 80,000"
+  duration         String?       // e.g. "3 months", "Permanent"
+  employerLogo     String?       // URL to company logo
+  jobIcon          String?       // URL to job icon
+  qualifications   String?       @db.Text
+  responsibilities String?       @db.Text
+  isActive         Boolean       @default(true)
+  createdBy        String        // Clerk user ID of the company that created it
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  expiresAt        DateTime?     // job listing expiry
+  applications     Application[]
+}
+
+model Application {
+  id          String   @id @default(cuid())
+  jobId       String
+  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  userId      String   // Clerk user ID from the mobile app
+  userName    String
+  userEmail   String
+  coverLetter String?  @db.Text
+  cvUrl       String?  // URL to uploaded CV file
+  status      String   @default("pending") // pending, reviewed, accepted, rejected
+  createdAt   DateTime @default(now())
+
+  @@unique([jobId, userId]) // One application per user per job
+}

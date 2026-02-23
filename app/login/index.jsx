@@ -1,5 +1,5 @@
-import { View, Image, Text, StyleSheet, Dimensions, Pressable } from 'react-native';
-import React, { useCallback, useEffect } from 'react';
+import { View, Image, Text, StyleSheet, Dimensions, Pressable, Alert, ActivityIndicator } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
 import { COLORS } from '../../constants';
 import * as WebBrowser from 'expo-web-browser';
 import { useOAuth } from '@clerk/clerk-expo';
@@ -21,6 +21,7 @@ WebBrowser.maybeCompleteAuthSession();
 export default function LoginScreen() {
   const router = useRouter();
   const { startOAuthFlow } = useOAuth({ strategy: 'oauth_google' });
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     // Check if the user is signed in, if not, redirect to login screen
@@ -48,6 +49,8 @@ export default function LoginScreen() {
   };
 
   const onPress = useCallback(async () => {
+    if (isLoading) return;
+    setIsLoading(true);
     try {
       const { createdSessionId, signIn, signUp, setActive } = await startOAuthFlow({
         redirectUrl: Linking.createURL('/', { scheme: 'acme' }),
@@ -55,13 +58,13 @@ export default function LoginScreen() {
 
       if (createdSessionId) {
         console.log('User signed in, session created:', createdSessionId);
-        
+
         // Store the session in AsyncStorage
         await AsyncStorage.setItem('clerk_session_id', createdSessionId);
-        
+
         // Set the active session
-        await setActive({ session: createdSessionId });  // Pass the session to setActive
-        
+        await setActive({ session: createdSessionId });
+
         // Redirect to home page after successful login
         router.replace('/');
       } else {
@@ -73,9 +76,12 @@ export default function LoginScreen() {
         }
       }
     } catch (err) {
-      console.error('OAuth error', err);
+      console.error('OAuth error', JSON.stringify(err, null, 2));
+      Alert.alert('Sign In Error', 'Something went wrong. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
-  }, [router]);
+  }, [startOAuthFlow, router, isLoading]);
 
   const { height: screenHeight } = Dimensions.get('window');
 
@@ -94,8 +100,12 @@ export default function LoginScreen() {
         <Text style={styles.text}>Looking for your next opportunity?</Text>
         <Text style={styles.text2}>Your gateway to job opportunities in Mombasa</Text>
       </View>
-      <Pressable onPress={onPress} style={styles.button}>
-        <Text style={styles.buttontext}>Join the movement</Text>
+      <Pressable onPress={onPress} style={[styles.button, isLoading && styles.buttonDisabled]} disabled={isLoading}>
+        {isLoading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttontext}>Join the movement</Text>
+        )}
       </Pressable>
     </View>
   );
@@ -139,6 +149,9 @@ const styles = StyleSheet.create({
     width: '90%',
     borderRadius: 14,
     backgroundColor: COLORS.blue,
+  },
+  buttonDisabled: {
+    opacity: 0.7,
   },
   buttontext: {
     textAlign: 'center',

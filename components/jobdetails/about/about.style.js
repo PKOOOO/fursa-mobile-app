@@ -1,27 +1,34 @@
 import { StyleSheet } from "react-native";
-
 import { COLORS, FONT, SIZES } from "../../../constants";
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: SIZES.large,
-    backgroundColor: "#FFF",
-    borderRadius: SIZES.medium,
-    padding: SIZES.medium,
+    marginTop: SIZES.medium,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 1,
   },
   headText: {
-    fontSize: SIZES.large,
+    fontSize: 17,
+    fontWeight: "700",
     color: COLORS.primary,
-    fontFamily: FONT.bold,
+    letterSpacing: -0.3,
+    marginBottom: 12,
   },
   contentBox: {
-    marginVertical: SIZES.small,
+    marginTop: 0,
   },
   contextText: {
-    fontSize: SIZES.medium - 2,
-    color: COLORS.gray,
+    fontSize: 14.5,
+    lineHeight: 22,
+    color: "#4a4a4a",
     fontFamily: FONT.regular,
-    marginVertical: SIZES.small / 1.25,
+    letterSpacing: 0.1,
   },
 });
 

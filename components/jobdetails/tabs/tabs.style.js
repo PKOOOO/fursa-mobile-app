@@ -1,25 +1,24 @@
 import { StyleSheet } from "react-native";
-
-import { COLORS, SHADOWS, SIZES } from "../../../constants";
+import { COLORS, SIZES } from "../../../constants";
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: SIZES.small,
+    marginTop: SIZES.medium,
     marginBottom: SIZES.small / 2,
   },
   btn: (name, activeTab) => ({
-    paddingVertical: SIZES.medium,
-    paddingHorizontal: SIZES.xLarge,
-    backgroundColor: name === activeTab ? COLORS.button : "#F3F4F8",
-    borderRadius: SIZES.medium,
-    marginLeft: 2,
-    ...SHADOWS.medium,
-    shadowColor: COLORS.white,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: name === activeTab ? COLORS.primary : "transparent",
+    borderRadius: 24,
+    borderWidth: name === activeTab ? 0 : 1.5,
+    borderColor: name === activeTab ? "transparent" : "#e0e0e0",
   }),
   btnText: (name, activeTab) => ({
-    fontFamily: "DMMedium",
-    fontSize: SIZES.small,
-    color: name === activeTab ? "#C3BFCC" : "#AAA9B8",
+    fontSize: 13,
+    fontWeight: name === activeTab ? "700" : "500",
+    color: name === activeTab ? "#fff" : "#888",
+    letterSpacing: 0.2,
   }),
 });
 
