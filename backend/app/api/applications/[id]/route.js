@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 // GET /api/applications/:id — get a single application with job details
 export async function GET(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const application = await prisma.application.findUnique({
       where: { id },
@@ -39,7 +39,7 @@ export async function GET(request, { params }) {
 // PUT /api/applications/:id — update application status
 export async function PUT(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
 
     const application = await prisma.application.update({

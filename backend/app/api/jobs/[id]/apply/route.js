@@ -1,58 +1,37 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
 
-// POST /api/jobs/:id/apply — apply for a job with CV upload
+// POST /api/jobs/:id/apply — apply for a job with optional CV upload
 export async function POST(request, { params }) {
     try {
         const { id } = await params;
 
         let userId, userName, userEmail, coverLetter, cvUrl;
 
-        // Read body as text for debugging + manual parsing
-        const bodyText = await request.text();
-        console.log("Apply request body length:", bodyText.length);
-        console.log("Apply request body preview:", bodyText.substring(0, 300));
+        const contentType = request.headers.get("content-type") || "";
 
-        // Strategy 1: Try JSON
-        try {
-            const body = JSON.parse(bodyText);
+        if (contentType.includes("application/json")) {
+            const body = await request.json();
             userId = body.userId;
             userName = body.userName;
             userEmail = body.userEmail;
             coverLetter = body.coverLetter;
-            console.log("Parsed as JSON successfully");
-        } catch (jsonErr) {
-            console.log("JSON parse failed, trying multipart extraction");
+        } else {
+            // multipart/form-data (from mobile app with CV file)
+            const formData = await request.formData();
+            userId = formData.get("userId");
+            userName = formData.get("userName");
+            userEmail = formData.get("userEmail");
+            coverLetter = formData.get("coverLetter");
 
-            // Strategy 2: Extract from multipart body text using regex
-            // Multipart format: --boundary\r\nContent-Disposition: form-data; name="field"\r\n\r\nvalue\r\n
-            const extractField = (fieldName) => {
-                // Try multiple patterns for different multipart formats
-                const patterns = [
-                    new RegExp(`name="${fieldName}"\\r\\n\\r\\n([\\s\\S]*?)\\r\\n--`, "m"),
-                    new RegExp(`name="${fieldName}"\\n\\n([\\s\\S]*?)\\n--`, "m"),
-                    new RegExp(`name="${fieldName}"[\\r\\n]+([^\\r\\n]+)`, "m"),
-                ];
-                for (const pattern of patterns) {
-                    const match = bodyText.match(pattern);
-                    if (match && match[1]) {
-                        return match[1].trim();
-                    }
-                }
-                return null;
-            };
-
-            userId = extractField("userId");
-            userName = extractField("userName");
-            userEmail = extractField("userEmail");
-            coverLetter = extractField("coverLetter");
-            console.log("Extracted from multipart:", { userId, userName, userEmail: userEmail ? "yes" : "no" });
+            const cvFile = formData.get("cv");
+            if (cvFile && cvFile instanceof File && cvFile.size > 0) {
+                // For now, skip file storage — you can add cloud upload later
+                console.log("CV file received:", cvFile.name, cvFile.size, "bytes");
+            }
         }
 
         if (!userId || !userName || !userEmail) {
-            console.error("Missing fields after parsing. Body was:", bodyText.substring(0, 500));
             return NextResponse.json(
                 { error: "Missing required fields: userId, userName, userEmail" },
                 { status: 400 }

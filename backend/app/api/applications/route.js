@@ -5,12 +5,14 @@ import prisma from "@/lib/prisma";
 export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url);
+        const id = searchParams.get("id");
         const status = searchParams.get("status");
         const jobId = searchParams.get("jobId");
         const userId = searchParams.get("userId");
         const ownerId = searchParams.get("ownerId");
 
         const where = {};
+        if (id) where.id = id;
         if (status) where.status = status;
         if (jobId) where.jobId = jobId;
         if (userId) where.userId = userId;

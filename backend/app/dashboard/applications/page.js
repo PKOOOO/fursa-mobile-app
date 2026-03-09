@@ -114,7 +114,7 @@ export default function ApplicationsPage() {
                             <p className="text-4xl mb-3">📋</p>
                             <p className="font-medium">No applications yet</p>
                             <p className="text-sm mt-1">
-                                Applications from mobile users will show up here.
+                                Applications from mobile users will show up here
                             </p>
                         </div>
                     ) : (

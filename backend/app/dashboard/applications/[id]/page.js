@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,17 +14,15 @@ const statusVariant = {
   rejected: "destructive",
 };
 
-export default function ApplicationDetailPage({ params }) {
-  const pathname = usePathname();
-  const routeId =
-    params?.id ?? pathname.split("/").filter(Boolean).pop() ?? null;
+export default function ApplicationDetailPage() {
+  const { id } = useParams();
 
   const [application, setApplication] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!routeId) {
+    if (!id) {
       setError("Missing application id in URL.");
       setLoading(false);
       return;
@@ -32,22 +30,23 @@ export default function ApplicationDetailPage({ params }) {
 
     const fetchApplication = async () => {
       try {
-        const res = await fetch(`/api/applications/${routeId}`);
+        const res = await fetch(`/api/applications/${id}`);
         if (!res.ok) {
-          throw new Error("Failed to load application");
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body.error || "Failed to load application");
         }
         const data = await res.json();
         setApplication(data);
       } catch (err) {
         console.error(err);
-        setError("Could not load application details.");
+        setError(err.message || "Could not load application details.");
       } finally {
         setLoading(false);
       }
     };
 
     fetchApplication();
-  }, [routeId]);
+  }, [id]);
 
   if (loading) {
     return (
@@ -193,4 +192,3 @@ export default function ApplicationDetailPage({ params }) {
     </div>
   );
 }
-
