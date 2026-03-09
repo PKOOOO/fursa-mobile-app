@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -125,7 +126,7 @@ export default function ApplicationsPage() {
                                     <TableHead>Status</TableHead>
                                     <TableHead>Applied</TableHead>
                                     <TableHead>CV</TableHead>
-                                    <TableHead className="text-right">Update</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -159,18 +160,30 @@ export default function ApplicationsPage() {
                                             )}
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <Select value={app.status} onValueChange={(v) => updateStatus(app.id, v)}>
-                                                <SelectTrigger className="w-[110px] h-8 text-xs">
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {STATUS_OPTIONS.map((s) => (
-                                                        <SelectItem key={s} value={s} className="capitalize text-xs">
-                                                            {s}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
+                                            <div className="flex items-center justify-end gap-2">
+                                                <Button
+                                                    asChild
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="text-xs"
+                                                >
+                                                    <Link href={`/dashboard/applications/${app.id}`}>
+                                                        View
+                                                    </Link>
+                                                </Button>
+                                                <Select value={app.status} onValueChange={(v) => updateStatus(app.id, v)}>
+                                                    <SelectTrigger className="w-[110px] h-8 text-xs">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {STATUS_OPTIONS.map((s) => (
+                                                            <SelectItem key={s} value={s} className="capitalize text-xs">
+                                                                {s}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))}
