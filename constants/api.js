@@ -6,6 +6,6 @@
 // - Find your IP with: ifconfig | grep "inet " (macOS) or ip addr (Linux)
 // - The Next.js dev server runs on port 3000 by default
 
-const API_BASE_URL = "http://192.168.1.33:3000";
+const API_BASE_URL = "https://fursa-backend-arit.vercel.app";
 
 export default API_BASE_URL;

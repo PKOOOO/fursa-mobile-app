@@ -1,8 +1,11 @@
 import { ClerkProvider, ClerkLoaded } from '@clerk/clerk-expo';
 import { Stack } from 'expo-router';
 import * as SecureStore from 'expo-secure-store'
+import { LogBox } from 'react-native';
 
-
+LogBox.ignoreLogs([
+  'Clerk: Clerk has been loaded with development keys.',
+]);
 
 const tokenCache = {
   async getToken(key) {

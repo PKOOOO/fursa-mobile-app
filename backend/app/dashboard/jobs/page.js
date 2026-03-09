@@ -71,7 +71,7 @@ export default function JobsPage() {
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">My Jobs</h1>
                     <p className="text-sm text-muted-foreground mt-1">
-                        {jobs.length} listing{jobs.length !== 1 ? "s" : ""}
+                        {jobs.length} Listing{jobs.length !== 1 ? "s" : ""}
                     </p>
                 </div>
                 <Button asChild>
