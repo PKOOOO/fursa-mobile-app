@@ -1,14 +1,29 @@
-import { View, ScrollView, StyleSheet, Image } from 'react-native';
+import { useState } from 'react';
+import { View, ScrollView, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
 import { SIZES } from '../../constants';
 import { Nearbyjobs, Popularjobs, Welcome } from '../../components';
 
 const DashboardScreen = () => {
+    const router = useRouter();
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const handleClick = () => {
+        if (searchTerm) {
+            router.push(`/search/${searchTerm}`);
+        }
+    };
+
     return (
-        
+
         <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={{ flex: 1, padding: SIZES.medium }}>
-          <Welcome />
+          <Welcome
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            handleClick={handleClick}
+          />
           <Popularjobs />
           <Nearbyjobs />
         </View>

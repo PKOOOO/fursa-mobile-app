@@ -1,7 +1,8 @@
 import 'react-native-gesture-handler';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import React, { useEffect } from 'react';
-import { View, SafeAreaView, Image, Text, TouchableOpacity } from 'react-native';
+import { View, Image, Text, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { COLORS, icons } from '../constants';
@@ -62,7 +63,7 @@ const CustomDrawerContent = (props) => {
 
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.lightWhite }}>
+    <View style={{ flex: 1, backgroundColor: COLORS.lightWhite }}>
       <Drawer.Navigator
         screenOptions={{
           headerShadowVisible: false, // Disable header shadow globally
@@ -105,7 +106,7 @@ const CustomDrawerContent = (props) => {
           }}
         />
       </Drawer.Navigator>
-    </SafeAreaView>
+    </View>
   );
 };
 

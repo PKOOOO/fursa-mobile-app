@@ -3,7 +3,6 @@ import { useState, useRef } from "react";
 import {
     View,
     Text,
-    SafeAreaView,
     ScrollView,
     TextInput,
     TouchableOpacity,
@@ -12,6 +11,7 @@ import {
     StyleSheet,
     Platform,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import * as DocumentPicker from "expo-document-picker";
 import { useUser } from "@clerk/clerk-expo";
 import { COLORS, SIZES } from "../../constants";

@@ -1,5 +1,12 @@
 import { NextResponse } from "next/server";
+import { v2 as cloudinary } from "cloudinary";
 import prisma from "@/lib/prisma";
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 // POST /api/jobs/:id/apply — apply for a job with optional CV upload
 export async function POST(request, { params }) {
@@ -26,8 +33,19 @@ export async function POST(request, { params }) {
 
             const cvFile = formData.get("cv");
             if (cvFile && cvFile instanceof File && cvFile.size > 0) {
-                // For now, skip file storage — you can add cloud upload later
-                console.log("CV file received:", cvFile.name, cvFile.size, "bytes");
+                const buffer = Buffer.from(await cvFile.arrayBuffer());
+                const uploadResult = await new Promise((resolve, reject) => {
+                    cloudinary.uploader.upload_stream(
+                        {
+                            resource_type: "raw",
+                            folder: "cvs",
+                            access_mode: "public",
+                            format: "pdf",
+                        },
+                        (error, result) => (error ? reject(error) : resolve(result))
+                    ).end(buffer);
+                });
+                cvUrl = uploadResult.secure_url;
             }
         }
 
