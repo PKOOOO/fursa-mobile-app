@@ -5,14 +5,12 @@ import * as WebBrowser from 'expo-web-browser';
 import { useOAuth } from '@clerk/clerk-expo';
 import * as Linking from 'expo-linking';
 import { useRouter } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const useWarmUpBrowser = () => {
   React.useEffect(() => {
     void WebBrowser.warmUpAsync();
-    return () => {
-      void WebBrowser.coolDownAsync();
-    };
+    return () => { void WebBrowser.coolDownAsync(); };
   }, []);
 };
 
@@ -24,29 +22,16 @@ export default function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Check if the user is signed in, if not, redirect to login screen
     const checkSession = async () => {
       try {
-        const session = await checkIfUserIsSignedIn();
-        if (session) {
-          router.replace('/home');
-        }
+        const session = await AsyncStorage.getItem('clerk_session_id');
+        if (session) router.replace('/home');
       } catch (error) {
         console.error('Error checking session:', error);
       }
     };
     checkSession();
   }, [router]);
-
-  const checkIfUserIsSignedIn = async () => {
-    try {
-      const session = await AsyncStorage.getItem('clerk_session_id');
-      return session != null;
-    } catch (error) {
-      console.error('Error checking session in AsyncStorage:', error);
-      return false; // Return false if there is an error
-    }
-  };
 
   const onPress = useCallback(async () => {
     if (isLoading) return;
@@ -57,23 +42,9 @@ export default function LoginScreen() {
       });
 
       if (createdSessionId) {
-        console.log('User signed in, session created:', createdSessionId);
-
-        // Store the session in AsyncStorage
         await AsyncStorage.setItem('clerk_session_id', createdSessionId);
-
-        // Set the active session
         await setActive({ session: createdSessionId });
-
-        // Redirect to home page after successful login
         router.replace('/');
-      } else {
-        // Handle MFA or further sign-in/sign-up logic
-        if (signIn) {
-          console.log('Sign-in process, handle MFA');
-        } else if (signUp) {
-          console.log('Sign-up process');
-        }
       }
     } catch (err) {
       console.error('OAuth error', JSON.stringify(err, null, 2));
@@ -87,26 +58,52 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Image Container */}
-      <View style={styles.imageContainer}>
+      {/* Top curved background */}
+      <View style={[styles.topBg, { height: screenHeight * 0.52 }]}>
         <Image
           source={require('../../assets/images/fursa-logo.png')}
-          style={[styles.logo, { height: screenHeight * 0.3 }]} // 30% of screen height
+          style={styles.logo}
+          resizeMode="contain"
         />
       </View>
 
-      {/* Text Content */}
-      <View style={styles.textContainer}>
-        <Text style={styles.text}>Looking for your next opportunity?</Text>
-        <Text style={styles.text2}>Your gateway to job opportunities in Mombasa</Text>
+      {/* Bottom card */}
+      <View style={styles.card}>
+        <View style={styles.pill} />
+
+        <Text style={styles.title}>Looking for your next opportunity?</Text>
+        <Text style={styles.subtitle}>
+          Your gateway to job opportunities in Mombasa. Find your perfect hustle today.
+        </Text>
+
+        {/* Feature bullets */}
+        <View style={styles.features}>
+          {['Browse hundreds of local jobs', 'Track your applications live', 'Match jobs to your skills with Hustle Score'].map((f) => (
+            <View key={f} style={styles.featureRow}>
+              <View style={styles.featureDot} />
+              <Text style={styles.featureText}>{f}</Text>
+            </View>
+          ))}
+        </View>
+
+        <Pressable
+          onPress={onPress}
+          style={({ pressed }) => [styles.button, isLoading && styles.buttonDisabled, pressed && styles.buttonPressed]}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <View style={styles.buttonInner}>
+              <Text style={styles.buttonText}>Continue with Google</Text>
+            </View>
+          )}
+        </Pressable>
+
+        <Text style={styles.footerNote}>
+          By continuing, you agree to our Terms & Privacy Policy
+        </Text>
       </View>
-      <Pressable onPress={onPress} style={[styles.button, isLoading && styles.buttonDisabled]} disabled={isLoading}>
-        {isLoading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttontext}>Join the movement</Text>
-        )}
-      </Pressable>
     </View>
   );
 }
@@ -114,48 +111,73 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    paddingTop: 150,
+    backgroundColor: '#fff',
   },
-  imageContainer: {
-    width: '100%',
+  topBg: {
+    backgroundColor: COLORS.primary,
     alignItems: 'center',
-    marginBottom: 100,
+    justifyContent: 'center',
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
   },
   logo: {
-    width: '60%',
-    resizeMode: 'contain',
+    width: '55%',
+    height: '45%',
   },
-  textContainer: {
-    alignItems: 'center',
-    display: 'flex',
-    paddingTop: 10,
+  card: {
+    flex: 1,
+    paddingHorizontal: 28,
+    paddingTop: 28,
   },
-  text: {
-    fontSize: 30,
-    fontWeight: '900',
-    color: '#333',
-    textAlign: 'center',
+  pill: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: 24,
   },
-  text2: {
-    fontSize: 20,
-    color: '#808080',
-    textAlign: 'center',
-  },
-  button: {
-    padding: 10,
-    marginTop: 100,
-    width: '90%',
-    borderRadius: 14,
-    backgroundColor: COLORS.blue,
-  },
-  buttonDisabled: {
-    opacity: 0.7,
-  },
-  buttontext: {
-    textAlign: 'center',
-    fontSize: 20,
+  title: {
+    fontSize: 24,
     fontWeight: '800',
+    color: COLORS.primary,
+    marginBottom: 10,
+    lineHeight: 30,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#888',
+    lineHeight: 20,
+    marginBottom: 24,
+  },
+  features: { marginBottom: 28, gap: 10 },
+  featureRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  featureDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: COLORS.tertiary,
+  },
+  featureText: { fontSize: 14, color: '#555', fontWeight: '500' },
+  button: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  buttonDisabled: { opacity: 0.7 },
+  buttonPressed: { opacity: 0.85 },
+  buttonInner: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  footerNote: {
+    fontSize: 11,
+    color: '#bbb',
+    textAlign: 'center',
+    lineHeight: 16,
   },
 });

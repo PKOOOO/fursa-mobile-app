@@ -123,11 +123,10 @@ const ApplyScreen = () => {
             const data = await res.json();
 
             if (res.ok) {
-                Alert.alert(
-                    "Application Sent! 🎉",
-                    `Your application for ${title || "this job"} has been submitted successfully.`,
-                    [{ text: "OK", onPress: () => router.back() }]
-                );
+                router.replace({
+                    pathname: '/apply/success',
+                    params: { title, company },
+                });
             } else if (res.status === 409) {
                 Alert.alert("Already Applied", "You have already applied for this job.");
             } else {
@@ -279,22 +278,20 @@ const styles = StyleSheet.create({
         paddingBottom: 100,
     },
     jobInfoCard: {
-        backgroundColor: "#fff",
-        borderRadius: 12,
+        backgroundColor: COLORS.primary,
+        borderRadius: 16,
         padding: 20,
         marginBottom: 20,
-        borderWidth: 1,
-        borderColor: "#f0f0f0",
     },
     jobTitle: {
         fontSize: 20,
         fontWeight: "700",
-        color: COLORS.primary,
+        color: "#fff",
         marginBottom: 4,
     },
     jobCompany: {
         fontSize: 14,
-        color: "#666",
+        color: "rgba(255,255,255,0.7)",
     },
     section: {
         marginBottom: 24,

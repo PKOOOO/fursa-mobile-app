@@ -6,8 +6,10 @@ import {
   ScrollView,
   ActivityIndicator,
   RefreshControl,
+  StyleSheet,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useUser } from "@clerk/clerk-expo";
 
 import {
   Company,
@@ -19,29 +21,33 @@ import {
 } from "../../components";
 import { COLORS, icons, SIZES } from "../../constants";
 import API_BASE_URL from "../../constants/api";
+import { calcHustleScore, loadSkills, scoreLabel } from "../../utils/hustle";
 
 const tabs = ["About", "Qualifications", "Responsibilities"];
 
 const JobDetails = () => {
-  const { id } = useLocalSearchParams(); // Using useLocalSearchParams to get the job ID
+  const { id } = useLocalSearchParams();
   const router = useRouter();
+  const { user } = useUser();
 
   const [job, setJob] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState(tabs[0]);
   const [refreshing, setRefreshing] = useState(false);
+  const [applicationStatus, setApplicationStatus] = useState(null);
+  const [hustleScore, setHustleScore] = useState(null);
 
-  // Fetch job details from the API
   const fetchJobDetails = async () => {
     setIsLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}/api/jobs/${id}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch job details");
-      }
+      if (!response.ok) throw new Error("Failed to fetch job details");
       const result = await response.json();
       setJob(result);
+
+      const skills = await loadSkills();
+      setHustleScore(calcHustleScore(skills, result));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -49,47 +55,57 @@ const JobDetails = () => {
     }
   };
 
+  const fetchApplicationStatus = async () => {
+    if (!user?.id) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/applications?userId=${user.id}&jobId=${id}`);
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        setApplicationStatus(data[0].status);
+      } else {
+        setApplicationStatus('none');
+      }
+    } catch {
+      setApplicationStatus('none');
+    }
+  };
+
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    fetchJobDetails();
-    setRefreshing(false);
+    Promise.all([fetchJobDetails(), fetchApplicationStatus()]).finally(() =>
+      setRefreshing(false)
+    );
   }, [id]);
 
-  // Handle tab content
   const displayTabContent = () => {
     switch (activeTab) {
       case "About":
-        return (
-          <JobAbout info={job?.description ?? "No data provided"} />
-        );
-
-      case "Qualifications":
+        return <JobAbout info={job?.description ?? "No data provided"} />;
+      case "Qualifications": {
         const quals = job?.qualifications
           ? job.qualifications.split("\n").map((q) => q.replace(/^[•\-]\s*/, "").trim()).filter(Boolean)
           : ["No qualifications listed"];
-        return (
-          <Specifics title="Qualifications" points={quals} />
-        );
-
-      case "Responsibilities":
+        return <Specifics title="Qualifications" points={quals} />;
+      }
+      case "Responsibilities": {
         const resps = job?.responsibilities
           ? job.responsibilities.split("\n").map((r) => r.replace(/^[•\-]\s*/, "").trim()).filter(Boolean)
           : ["No responsibilities listed"];
-        return (
-          <Specifics title="Responsibilities" points={resps} />
-        );
-
+        return <Specifics title="Responsibilities" points={resps} />;
+      }
       default:
         return null;
     }
   };
 
-  // Fetch job details on component mount
   useEffect(() => {
     if (id) {
       fetchJobDetails();
+      fetchApplicationStatus();
     }
   }, [id]);
+
+  const score = scoreLabel(hustleScore);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.lightWhite }}>
@@ -114,21 +130,16 @@ const JobDetails = () => {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
         {isLoading ? (
-          <ActivityIndicator size="large" color={COLORS.primary} />
+          <ActivityIndicator size="large" color={COLORS.primary} style={{ marginTop: 40 }} />
         ) : error ? (
-          <Text style={{ color: COLORS.error, fontSize: 16 }}>
-            Something went wrong: {error}
-          </Text>
+          <Text style={styles.errorText}>Something went wrong: {error}</Text>
         ) : !job ? (
-          <Text>No job details found</Text>
+          <Text style={styles.emptyText}>No job details found</Text>
         ) : (
-          <View style={{ padding: SIZES.medium, paddingBottom: 100 }}>
-            {/* Company Information */}
+          <View style={{ padding: SIZES.medium, paddingBottom: 120 }}>
             <Company
               companyLogo={job?.employerLogo || job?.jobIcon}
               jobTitle={job?.title}
@@ -136,171 +147,103 @@ const JobDetails = () => {
               location={job?.location}
             />
 
-            {/* Job Tabs */}
-            <JobTabs
-              tabs={tabs}
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-            />
+            {/* Hustle Score badge */}
+            {score && (
+              <View style={[styles.hustleCard, { backgroundColor: score.bg }]}>
+                <View style={styles.hustleLeft}>
+                  <Text style={styles.hustleEmoji}>⚡</Text>
+                  <View>
+                    <Text style={[styles.hustleLabel, { color: score.color }]}>
+                      {score.label}
+                    </Text>
+                    <Text style={styles.hustleSub}>
+                      {hustleScore}% skill match with this job
+                    </Text>
+                  </View>
+                </View>
+                <View style={[styles.hustleCircle, { borderColor: score.color }]}>
+                  <Text style={[styles.hustleScore, { color: score.color }]}>
+                    {hustleScore}%
+                  </Text>
+                </View>
+              </View>
+            )}
 
-            {/* Tab Content */}
+            {/* Job meta chips */}
+            <View style={styles.metaRow}>
+              {job.type && (
+                <View style={styles.chip}>
+                  <Text style={styles.chipText}>{job.type}</Text>
+                </View>
+              )}
+              {job.remote !== undefined && (
+                <View style={styles.chip}>
+                  <Text style={styles.chipText}>{job.remote ? "Remote" : "On-site"}</Text>
+                </View>
+              )}
+              {job.salary && (
+                <View style={[styles.chip, styles.chipAccent]}>
+                  <Text style={[styles.chipText, styles.chipAccentText]}>{job.salary}</Text>
+                </View>
+              )}
+            </View>
+
+            <JobTabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
             {displayTabContent()}
           </View>
         )}
       </ScrollView>
 
-      {/* Job Footer */}
       <JobFooter
         jobId={id}
         title={job?.title}
         company={job?.company}
+        applicationStatus={applicationStatus}
       />
     </SafeAreaView>
   );
 };
 
+const styles = StyleSheet.create({
+  errorText: { color: 'red', fontSize: 15, padding: SIZES.medium },
+  emptyText: { color: '#888', fontSize: 15, padding: SIZES.medium },
+  hustleCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 12,
+  },
+  hustleLeft: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
+  hustleEmoji: { fontSize: 24 },
+  hustleLabel: { fontSize: 15, fontWeight: '700' },
+  hustleSub: { fontSize: 12, color: '#666', marginTop: 1 },
+  hustleCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 2.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
+  hustleScore: { fontSize: 14, fontWeight: '800' },
+  metaRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
+  chip: {
+    backgroundColor: '#f0f0f0',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+  },
+  chipText: { fontSize: 12, color: '#555', fontWeight: '600' },
+  chipAccent: { backgroundColor: '#EEF2FF' },
+  chipAccentText: { color: COLORS.primary },
+});
+
 export default JobDetails;
-
-
-
-// import React, { useEffect, useState, useCallback } from "react";
-// import { View, Text, ActivityIndicator, ScrollView, SafeAreaView, Image, RefreshControl } from "react-native";
-// import { useLocalSearchParams } from "expo-router";
-// import { COLORS, SIZES, icons } from "../../constants"; // Assuming SIZES, COLORS, and icons are already imported
-
-// const tabs = ["About", "Location", "Description"];
-
-// const JobDetails = () => {
-//   const { id } = useLocalSearchParams();
-//   const [job, setJob] = useState(null);
-//   const [isLoading, setIsLoading] = useState(false);
-//   const [error, setError] = useState(null);
-//   const [activeTab, setActiveTab] = useState(tabs[0]);
-//   const [refreshing, setRefreshing] = useState(false);
-
-//   // Fetch job details from API
-//   const fetchJobDetails = async () => {
-//     setIsLoading(true);
-//     try {
-//       const response = await fetch(`http://192.168.0.103:3000/api/jobs/${id}`);
-//       if (!response.ok) {
-//         throw new Error("Failed to fetch job details");
-//       }
-//       const result = await response.json();
-//       setJob(result);
-//     } catch (err) {
-//       setError(err.message);
-//     } finally {
-//       setIsLoading(false);
-//     }
-//   };
-
-//   const onRefresh = useCallback(() => {
-//     setRefreshing(true);
-//     fetchJobDetails();
-//     setRefreshing(false);
-//   }, [id]);
-
-//   useEffect(() => {
-//     if (id) {
-//       fetchJobDetails();
-//     }
-//   }, [id]);
-
-//   // Render content for each active tab
-//   const renderTabContent = () => {
-//     switch (activeTab) {
-//       case "About":
-//         return (
-//           <View>
-//             <Text style={{ fontSize: 16, color: COLORS.darkGray, marginVertical: SIZES.small }}>
-//               {job?.about ?? "No information available"}
-//             </Text>
-//           </View>
-//         );
-//       case "Location":
-//         return (
-//           <View>
-//             <Text style={{ fontSize: 16, color: COLORS.darkGray, marginVertical: SIZES.small }}>
-//               {job?.location ?? "Location not specified"}
-//             </Text>
-//           </View>
-//         );
-//       case "Description":
-//         return (
-//           <View>
-//             <Text style={{ fontSize: 16, color: COLORS.darkGray, marginVertical: SIZES.small }}>
-//               {job?.description ?? "No description available"}
-//             </Text>
-//           </View>
-//         );
-//       default:
-//         return null;
-//     }
-//   };
-
-//   if (isLoading) {
-//     return <ActivityIndicator size="large" color={COLORS.primary} />;
-//   }
-
-//   if (error) {
-//     return <Text style={{ color: COLORS.error, fontSize: 16 }}>Something went wrong: {error}</Text>;
-//   }
-
-//   if (!job) {
-//     return <Text>No job details found</Text>;
-//   }
-
-//   return (
-//     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.lightWhite }}>
-//       <ScrollView
-//         showsVerticalScrollIndicator={false}
-//         style={{ padding: SIZES.medium }}
-//         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-//       >
-//         {/* Job Icon */}
-//         {job.jobIcon && (
-//           <Image
-//             source={{ uri: job.jobIcon }}
-//             style={{
-//               width: 50,
-//               height: 50,
-//               borderRadius: 10,
-//               marginBottom: SIZES.small,
-//             }}
-//           />
-//         )}
-
-//         {/* Job Title */}
-//         <Text style={{ fontSize: 24, fontWeight: "bold", color: COLORS.primary }}>{job.title}</Text>
-
-//         {/* Tabs Section */}
-//         <View style={{ flexDirection: "row", marginVertical: SIZES.medium }}>
-//           {tabs.map((tab, index) => (
-//             <Text
-//               key={index}
-//               style={{
-//                 fontSize: 16,
-//                 fontWeight: activeTab === tab ? "bold" : "normal",
-//                 color: activeTab === tab ? COLORS.primary : COLORS.darkGray,
-//                 marginRight: SIZES.medium,
-//                 paddingBottom: 5,
-//                 borderBottomWidth: activeTab === tab ? 2 : 0,
-//                 borderBottomColor: COLORS.primary,
-//                 textTransform: "capitalize",
-//               }}
-//               onPress={() => setActiveTab(tab)}
-//             >
-//               {tab}
-//             </Text>
-//           ))}
-//         </View>
-
-//         {/* Render Content Based on Active Tab */}
-//         {renderTabContent()}
-//       </ScrollView>
-//     </SafeAreaView>
-//   );
-// };
-
-// export default JobDetails;

@@ -56,6 +56,19 @@ const Layout = () => {
               headerShown: false
             }}
           />
+          <Stack.Screen name="apply/success"
+            options={{
+              headerShown: false,
+              gestureEnabled: false,
+            }}
+          />
+          <Stack.Screen name="screens/skills"
+            options={{
+              headerTitle: "My Skills",
+              headerShadowVisible: false,
+              headerStyle: { backgroundColor: '#FAFAFC' },
+            }}
+          />
         </Stack>
       </ClerkLoaded>
     </ClerkProvider>
